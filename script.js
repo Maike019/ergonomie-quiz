@@ -125,9 +125,18 @@ const QUESTIONS = [
         hint: "Es reduziert Reflexionen.",
     },
 ];
+// Initialize variables
 
 let currentQuestionIndex = 0;
 let score = 0;
+
+// Shuffle the questions array
+function shuffleQuestions() {
+    for (let i = QUESTIONS.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [QUESTIONS[i], QUESTIONS[j]] = [QUESTIONS[j], QUESTIONS[i]];
+    }
+}
 
 const questionElement = document.getElementById("question");
 const answersElement = document.getElementById("answers");
@@ -137,6 +146,8 @@ const nextButton = document.getElementById("next-button");
 const resultElement = document.getElementById("result");
 const scoreElement = document.getElementById("score");
 const restartButton = document.getElementById("restart-button");
+const leaderboardButton = document.getElementById("leaderboard-button");
+const leaderboardElement = document.getElementById("leaderboard");
 
 function showQuestion() {
     const currentQuestion = QUESTIONS[currentQuestionIndex];
@@ -162,6 +173,7 @@ function checkAnswer() {
     if (currentQuestionIndex < QUESTIONS.length) {
         showQuestion();
     } else {
+        saveScore();
         showResult();
     }
 }
@@ -182,14 +194,58 @@ function showResult() {
 function restartQuiz() {
     currentQuestionIndex = 0;
     score = 0;
+    shuffleQuestions(); // Shuffle questions again for a new game
     resultElement.classList.add("hidden");
     document.getElementById("quiz").classList.remove("hidden");
     showQuestion();
 }
 
+// Save the score to the leaderboard
+function saveScore() {
+    const playerName = prompt("Geben Sie Ihren Namen ein:");
+    if (!playerName) return; // If no name is entered, do nothing.
+
+    // Retrieve the leaderboard from localStorage or initialize an empty array.
+    const leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
+
+    // Add the new score to the leaderboard.
+    leaderboard.push({ name: playerName, score: score, date: new Date().toLocaleString() });
+
+    // Sort the leaderboard by score in descending order.
+    leaderboard.sort((a, b) => b.score - a.score);
+
+    // Save the updated leaderboard back to localStorage.
+    localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
+}
+
+
+// Show the leaderboard
+function showLeaderboard() {
+    // Retrieve the leaderboard from localStorage or initialize an empty array.
+    const leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
+
+    // Clear the leaderboard display and add a title.
+    leaderboardElement.innerHTML = "<h2>Leaderboard</h2>";
+
+    // Check if the leaderboard is empty.
+    if (leaderboard.length === 0) {
+        leaderboardElement.innerHTML += "<p>Keine Einträge vorhanden.</p>";
+    } else {
+        // Display each entry in the leaderboard.
+        leaderboard.forEach((entry, index) => {
+            leaderboardElement.innerHTML += `<p>${index + 1}. ${entry.name} - ${entry.score} Punkte (${entry.date})</p>`;
+        });
+    }
+
+    // Make the leaderboard visible.
+    leaderboardElement.classList.remove("hidden");
+}
+
 hintButton.addEventListener("click", showHint);
 nextButton.addEventListener("click", checkAnswer);
 restartButton.addEventListener("click", restartQuiz);
+leaderboardButton.addEventListener("click", showLeaderboard);
 
 // Start the quiz
-showQuestion();
+shuffleQuestions(); // Shuffle questions before starting
+showQuestion(); // Show the first question
