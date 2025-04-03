@@ -1,6 +1,7 @@
 body {
     font-family: Arial, sans-serif;
-    background-color: #043c54; /* Updated background color */
+    background-color: #f4f4f9;
+    color: #333;
     margin: 0;
     padding: 0;
     display: flex;
@@ -20,12 +21,25 @@ body {
     position: relative;
 }
 
+#quiz, #result, #leaderboard {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    width: 90%;
+    max-width: 600px;
+    text-align: center;
+}
+
 h1 {
     color: #333;
     margin-top: 20px;
 }
 
-/* Add styling for the company logo */
+h2, h3 {
+    color: #444;
+}
+
 .logo {
     position: absolute;
     top: -50px;
@@ -52,17 +66,63 @@ button {
     color: white;
     border: none;
     padding: 10px 20px;
-    margin: 10px;
+    margin: 5px; /* Adjusted margin for better spacing */
     border-radius: 5px;
     cursor: pointer;
+    transition: background-color 0.3s ease; /* Added smooth hover transition */
 }
 
 button:hover {
     background-color: #0056b3;
 }
 
+.btn-primary {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 10px;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 10px;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+}
+
 .hidden {
     display: none;
+}
+
+.input-field {
+    width: 80%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.hint-text {
+    color: #555;
+    font-style: italic;
+    margin-top: 10px;
 }
 
 #hint {
@@ -70,6 +130,7 @@ button:hover {
     font-style: italic;
     margin-top: 10px;
 }
+
 #leaderboard {
     margin-top: 20px;
     background-color: #f9f9f9;

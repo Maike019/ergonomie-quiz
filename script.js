@@ -125,17 +125,14 @@ const QUESTIONS = [
         hint: "Es reduziert Reflexionen.",
     },
 ];
-// Initialize variables
 
 let currentQuestionIndex = 0;
 let score = 0;
+let playerName = "";
 
 // Shuffle the questions array
 function shuffleQuestions() {
-    for (let i = QUESTIONS.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [QUESTIONS[i], QUESTIONS[j]] = [QUESTIONS[j], QUESTIONS[i]];
-    }
+    QUESTIONS.sort(() => Math.random() - 0.5);
 }
 
 const questionElement = document.getElementById("question");
@@ -149,103 +146,139 @@ const restartButton = document.getElementById("restart-button");
 const leaderboardButton = document.getElementById("leaderboard-button");
 const leaderboardElement = document.getElementById("leaderboard");
 
+const returnButton = document.createElement("button");
+returnButton.textContent = "Zurück";
+returnButton.id = "return-button";
+returnButton.style.display = "none";
+document.body.appendChild(returnButton);
+
 function showQuestion() {
     const currentQuestion = QUESTIONS[currentQuestionIndex];
-    questionElement.textContent = currentQuestion.question;
+    questionElement.innerHTML = `<h3>${currentQuestion.question}</h3>`;
     hintElement.textContent = "";
     answersElement.innerHTML = `
-        <input type="text" id="user-answer" placeholder="Ihre Antwort">
+        <input type="text" id="user-answer" placeholder="Ihre Antwort" class="input-field">
+        <button id="submit-answer" class="btn-primary">Antwort prüfen</button>
     `;
-    hintButton.style.display = "inline-block";
-    nextButton.style.display = "none";
+    toggleHintAndNextButton(true);
+
+    // Add event listener for the dynamically created button
+    document.getElementById("submit-answer").addEventListener("click", checkAnswer);
 }
 
 function checkAnswer() {
-    const userAnswer = document.getElementById("user-answer").value.trim();
+    const userAnswer = document.getElementById("user-answer").value.trim().toLowerCase();
     const currentQuestion = QUESTIONS[currentQuestionIndex];
-    if (userAnswer.toLowerCase() === currentQuestion.answer.toLowerCase()) {
+    const correctAnswer = Array.isArray(currentQuestion.answer)
+        ? currentQuestion.answer.map(a => a.toLowerCase())
+        : [currentQuestion.answer.toLowerCase()];
+
+    if (correctAnswer.includes(userAnswer)) {
         alert("Richtig!");
         score++;
     } else {
         alert(`Falsch! Die richtige Antwort ist: ${currentQuestion.answer}`);
     }
+
     currentQuestionIndex++;
-    if (currentQuestionIndex < QUESTIONS.length) {
-        showQuestion();
-    } else {
-        saveScore();
-        showResult();
-    }
+    currentQuestionIndex < QUESTIONS.length ? showQuestion() : endQuiz();
 }
 
 function showHint() {
-    const currentQuestion = QUESTIONS[currentQuestionIndex];
-    hintElement.textContent = `Hinweis: ${currentQuestion.hint}`;
-    hintButton.style.display = "none";
-    nextButton.style.display = "inline-block";
+    hintElement.innerHTML = `<p class="hint-text">Hinweis: ${QUESTIONS[currentQuestionIndex].hint}</p>`;
+    toggleHintAndNextButton(false);
+}
+
+function toggleHintAndNextButton(showHint) {
+    hintButton.style.display = showHint ? "inline-block" : "none";
+    nextButton.style.display = showHint ? "none" : "inline-block";
 }
 
 function showResult() {
     document.getElementById("quiz").classList.add("hidden");
     resultElement.classList.remove("hidden");
-    scoreElement.textContent = `Sie haben ${score} von ${QUESTIONS.length} Fragen richtig beantwortet!`;
+    resultElement.innerHTML = `
+        <h2>Ergebnis</h2>
+        <p>Sie haben <strong>${score}</strong> von <strong>${QUESTIONS.length}</strong> Fragen richtig beantwortet!</p>
+        <button id="restart-quiz" class="btn-primary">Quiz neu starten</button>
+    `;
+
+    // Add event listener for the restart button
+    document.getElementById("restart-quiz").addEventListener("click", restartQuiz);
 }
 
 function restartQuiz() {
     currentQuestionIndex = 0;
     score = 0;
-    shuffleQuestions(); // Shuffle questions again for a new game
+    shuffleQuestions();
     resultElement.classList.add("hidden");
     document.getElementById("quiz").classList.remove("hidden");
     showQuestion();
 }
 
-// Save the score to the leaderboard
 function saveScore() {
-    const playerName = prompt("Geben Sie Ihren Namen ein:");
-    if (!playerName) return; // If no name is entered, do nothing.
+    if (!playerName) return;
 
-    // Retrieve the leaderboard from localStorage or initialize an empty array.
     const leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
-
-    // Add the new score to the leaderboard.
-    leaderboard.push({ name: playerName, score: score, date: new Date().toLocaleString() });
-
-    // Sort the leaderboard by score in descending order.
+    leaderboard.push({ name: playerName, score, date: new Date().toLocaleString() });
     leaderboard.sort((a, b) => b.score - a.score);
-
-    // Save the updated leaderboard back to localStorage.
     localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
 }
 
-
-// Show the leaderboard
 function showLeaderboard() {
-    // Retrieve the leaderboard from localStorage or initialize an empty array.
     const leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
+    leaderboardElement.innerHTML = `
+        <h2>Leaderboard</h2>
+        ${leaderboard.length === 0 
+            ? "<p>Keine Einträge vorhanden.</p>" 
+            : leaderboard.map((entry, index) => 
+                `<p>${index + 1}. <strong>${entry.name}</strong> - ${entry.score} Punkte (${entry.date})</p>`
+              ).join("")}
+        <button id="clear-leaderboard" class="btn-secondary">Leaderboard löschen</button>
+        <button id="close-leaderboard" class="btn-secondary">Zurück</button>
+    `;
 
-    // Clear the leaderboard display and add a title.
-    leaderboardElement.innerHTML = "<h2>Leaderboard</h2>";
-
-    // Check if the leaderboard is empty.
-    if (leaderboard.length === 0) {
-        leaderboardElement.innerHTML += "<p>Keine Einträge vorhanden.</p>";
-    } else {
-        // Display each entry in the leaderboard.
-        leaderboard.forEach((entry, index) => {
-            leaderboardElement.innerHTML += `<p>${index + 1}. ${entry.name} - ${entry.score} Punkte (${entry.date})</p>`;
-        });
-    }
-
-    // Make the leaderboard visible.
     leaderboardElement.classList.remove("hidden");
+    returnButton.style.display = "none";
+    document.getElementById("quiz").classList.add("hidden");
+
+    // Add event listeners for the buttons
+    document.getElementById("clear-leaderboard").addEventListener("click", clearLeaderboard);
+    document.getElementById("close-leaderboard").addEventListener("click", closeLeaderboard);
 }
 
+function clearLeaderboard() {
+    if (confirm("Möchten Sie das Leaderboard wirklich löschen?")) {
+        localStorage.removeItem("leaderboard");
+        alert("Leaderboard wurde gelöscht.");
+        showLeaderboard(); // Refresh the leaderboard display
+    }
+}
+
+function closeLeaderboard() {
+    leaderboardElement.classList.add("hidden");
+    returnButton.style.display = "none";
+    document.getElementById("quiz").classList.remove("hidden");
+}
+
+function endQuiz() {
+    saveScore();
+    showResult();
+}
+
+function startQuiz() {
+    playerName = prompt("Geben Sie Ihren Namen ein:");
+    if (!playerName) {
+        alert("Bitte geben Sie einen Namen ein, um das Quiz zu starten.");
+        return startQuiz();
+    }
+    shuffleQuestions();
+    showQuestion();
+}
+
+// Event listeners
 hintButton.addEventListener("click", showHint);
-nextButton.addEventListener("click", checkAnswer);
-restartButton.addEventListener("click", restartQuiz);
 leaderboardButton.addEventListener("click", showLeaderboard);
 
 // Start the quiz
-shuffleQuestions(); // Shuffle questions before starting
-showQuestion(); // Show the first question
+startQuiz();
