@@ -7,15 +7,19 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="center-wrapper"> <!-- Added wrapper for central alignment -->
+    <header style="background-color: #1e3a5f; color: #f4f4f9; padding: 20px 0; text-align: center;">
+        <h1>Ergonomie Quiz</h1>
+        <p style="font-size: 18px; margin-top: 5px;">Testen Sie Ihr Wissen über ergonomisches Arbeiten!</p>
+    </header>
+    <div class="center-wrapper">
         <div class="quiz-container">
             <div class="logo">
                 <img src="logo.png" alt="Company Logo">
             </div>
-            <h1>Ergonomie Quiz</h1>
+            <h1>Willkommen!</h1>
             <div id="player-name-container" class="hidden">
-                <h2>Willkommen zum Ergonomie Quiz!</h2>
-                <p>Bitte geben Sie Ihren Namen ein, um zu starten:</p>
+                <h2>Starten Sie das Quiz</h2>
+                <p>Geben Sie Ihren Namen ein, um zu beginnen:</p>
                 <input type="text" id="player-name" placeholder="Ihr Name">
                 <button id="submit-name-button">Starten</button>
             </div>
@@ -25,18 +29,21 @@
                 <button id="hint-button">Hinweis</button>
                 <p id="hint"></p>
                 <button id="next-button">Nächste Frage</button>
-                <button id="skip-button" class="btn-secondary">Frage überspringen</button> <!-- Added skip button -->
+                <button id="skip-button" class="btn-secondary">Frage überspringen</button>
             </div>
             <div id="result" class="hidden">
-                <h2>Herzlichen Glückwunsch!</h2> <!-- Added congratulatory message -->
+                <h2>Herzlichen Glückwunsch!</h2>
                 <p id="score"></p>
-                <div class="result-decorative"></div> <!-- Added decorative element -->
+                <div class="result-decorative"></div>
                 <button id="restart-button" class="btn-primary">Quiz neu starten</button>
             </div>
             <button id="leaderboard-button">Leaderboard anzeigen</button>
             <div id="leaderboard" class="hidden"></div>
         </div>
     </div>
+    <footer style="background-color: #1e3a5f; color: #f4f4f9; text-align: center; padding: 20px 0; margin-top: 20px;">
+        <p>&copy; 2023 Ergonomie Quiz. Alle Rechte vorbehalten.</p>
+    </footer>
     <script src="script.js"></script>
 </body>
 </html>

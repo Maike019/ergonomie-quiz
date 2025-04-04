@@ -173,6 +173,10 @@ function showQuestion() {
     const userAnswerInput = document.getElementById("user-answer");
     const submitAnswerButton = document.getElementById("submit-answer");
 
+    // Add fade-in animation
+    const quizContainer = document.querySelector(".quiz-container");
+    quizContainer.style.animation = "fadeIn 0.5s ease-in-out";
+
     // Add event listener for the dynamically created button
     submitAnswerButton.addEventListener("click", checkAnswer);
 
@@ -288,6 +292,13 @@ function startQuiz() {
     document.getElementById("quiz").classList.add("hidden");
     document.getElementById("result").classList.add("hidden");
     document.getElementById("leaderboard").classList.add("hidden");
+
+    // Add a welcoming message
+    const welcomeMessage = document.createElement("p");
+    welcomeMessage.textContent = "Viel Erfolg beim Quiz!";
+    welcomeMessage.style.fontSize = "18px";
+    welcomeMessage.style.marginTop = "10px";
+    document.getElementById("player-name-container").appendChild(welcomeMessage);
 }
 
 function submitPlayerName() {
