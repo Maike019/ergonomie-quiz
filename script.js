@@ -6,7 +6,7 @@ const QUESTIONS = [
     },
     {
         question: "Wie oft sollte man während der Arbeit am Schreibtisch aufstehen?",
-        answer: "Alle 30 Minuten",
+        answer: ["Alle 30 Minuten", "30 Minuten"],
         hint: "Es ist weniger als eine Stunde.",
     },
     {
@@ -71,7 +71,7 @@ const QUESTIONS = [
     },
     {
         question: "Wie viele Pausen sollte man bei einer 8-Stunden-Schicht machen?",
-        answer: "2-3",
+        answer: ["2-3", "2", "3"],
         hint: "Zwischen 2 und 3 Pausen.",
     },
     {
@@ -130,9 +130,10 @@ let currentQuestionIndex = 0;
 let score = 0;
 let playerName = "";
 
-// Shuffle the questions array
+// Shuffle the questions array and limit to 10 questions
 function shuffleQuestions() {
     QUESTIONS.sort(() => Math.random() - 0.5);
+    QUESTIONS.splice(10); // Limit to 10 questions
 }
 
 const questionElement = document.getElementById("question");
@@ -145,12 +146,19 @@ const scoreElement = document.getElementById("score");
 const restartButton = document.getElementById("restart-button");
 const leaderboardButton = document.getElementById("leaderboard-button");
 const leaderboardElement = document.getElementById("leaderboard");
+const skipButton = document.getElementById("skip-button"); // Get the skip button
 
 const returnButton = document.createElement("button");
 returnButton.textContent = "Zurück";
 returnButton.id = "return-button";
 returnButton.style.display = "none";
 document.body.appendChild(returnButton);
+
+// Adjust the logo position
+const logoElement = document.getElementById("logo");
+if (logoElement) {
+    logoElement.style.marginTop = "10px"; // Move the logo higher
+}
 
 function showQuestion() {
     const currentQuestion = QUESTIONS[currentQuestionIndex];
@@ -162,8 +170,18 @@ function showQuestion() {
     `;
     toggleHintAndNextButton(true);
 
+    const userAnswerInput = document.getElementById("user-answer");
+    const submitAnswerButton = document.getElementById("submit-answer");
+
     // Add event listener for the dynamically created button
-    document.getElementById("submit-answer").addEventListener("click", checkAnswer);
+    submitAnswerButton.addEventListener("click", checkAnswer);
+
+    // Add event listener for the Enter key
+    userAnswerInput.addEventListener("keypress", (event) => {
+        if (event.key === "Enter") {
+            checkAnswer();
+        }
+    });
 }
 
 function checkAnswer() {
@@ -195,10 +213,9 @@ function toggleHintAndNextButton(showHint) {
 }
 
 function showResult() {
-    document.getElementById("quiz").classList.add("hidden");
     resultElement.classList.remove("hidden");
     resultElement.innerHTML = `
-        <h2>Ergebnis</h2>
+        <h2>Herzlichen Glückwunsch!</h2>
         <p>Sie haben <strong>${score}</strong> von <strong>${QUESTIONS.length}</strong> Fragen richtig beantwortet!</p>
         <button id="restart-quiz" class="btn-primary">Quiz neu starten</button>
     `;
@@ -232,7 +249,7 @@ function showLeaderboard() {
         ${leaderboard.length === 0 
             ? "<p>Keine Einträge vorhanden.</p>" 
             : leaderboard.map((entry, index) => 
-                `<p>${index + 1}. <strong>${entry.name}</strong> - ${entry.score} Punkte (${entry.date})</p>`
+                `<p>${index + 1}. <strong>${entry.name}</strong> - ${entry.score} Punkte</p>` // Removed date
               ).join("")}
         <button id="clear-leaderboard" class="btn-secondary">Leaderboard löschen</button>
         <button id="close-leaderboard" class="btn-secondary">Zurück</button>
@@ -267,18 +284,40 @@ function endQuiz() {
 }
 
 function startQuiz() {
-    playerName = prompt("Geben Sie Ihren Namen ein:");
-    if (!playerName) {
+    document.getElementById("player-name-container").classList.remove("hidden");
+    document.getElementById("quiz").classList.add("hidden");
+    document.getElementById("result").classList.add("hidden");
+    document.getElementById("leaderboard").classList.add("hidden");
+}
+
+function submitPlayerName() {
+    const nameInput = document.getElementById("player-name").value.trim();
+    if (!nameInput) {
         alert("Bitte geben Sie einen Namen ein, um das Quiz zu starten.");
-        return startQuiz();
+        return;
     }
+    playerName = nameInput;
+    document.getElementById("player-name-container").style.display = "none"; // Hide the input container
+    document.getElementById("quiz").style.display = "block"; // Show the quiz
     shuffleQuestions();
     showQuestion();
+    document.getElementById("player-name").value = ""; // Clear the input field
+}
+
+function skipQuestion() {
+    currentQuestionIndex++;
+    if (currentQuestionIndex < QUESTIONS.length) {
+        showQuestion();
+    } else {
+        endQuiz();
+    }
 }
 
 // Event listeners
+document.getElementById("submit-name-button").addEventListener("click", submitPlayerName);
 hintButton.addEventListener("click", showHint);
 leaderboardButton.addEventListener("click", showLeaderboard);
+skipButton.addEventListener("click", skipQuestion);
 
 // Start the quiz
 startQuiz();
