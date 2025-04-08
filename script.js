@@ -130,7 +130,6 @@ let currentQuestionIndex = 0;
 let score = 0;
 let playerName = "";
 
-// Shuffle the questions array and limit to 10 questions
 function shuffleQuestions() {
     QUESTIONS.sort(() => Math.random() - 0.5);
     QUESTIONS.splice(10); // Limit to 10 questions
@@ -303,10 +302,12 @@ function startQuiz() {
 
 function submitPlayerName() {
     const nameInput = document.getElementById("player-name").value.trim();
+
     if (!nameInput) {
         alert("Bitte geben Sie einen Namen ein, um das Quiz zu starten.");
         return;
     }
+
     playerName = nameInput;
     document.getElementById("player-name-container").style.display = "none"; // Hide the input container
     document.getElementById("quiz").style.display = "block"; // Show the quiz

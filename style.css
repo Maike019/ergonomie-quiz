@@ -9,7 +9,8 @@ body {
     display: flex;
     justify-content: center; /* Center content vertically */
     align-items: center; /* Center content horizontally */
-    height: 100vh;
+    height: 100vh; /* Revert to full viewport height */
+    overflow: auto; /* Allow scrolling */
     flex-direction: column; /* Ensure vertical alignment of all elements */
     text-align: center; /* Center text content */
 }
@@ -22,6 +23,9 @@ body {
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3); /* Enhanced shadow for depth */
     width: 90%;
     max-width: 600px;
+    max-height: none; /* Remove height restriction */
+    overflow-y: visible; /* Remove vertical scrolling */
+    box-sizing: border-box; /* Include padding and border in height/width calculations */
     text-align: center;
     position: relative;
     margin: auto; /* Ensure the container is centered */
@@ -29,6 +33,7 @@ body {
     flex-direction: column; /* Stack child elements vertically */
     align-items: center; /* Center child elements horizontally */
     color: #333; /* Adjusted text color for readability */
+    margin-top: 80px; /* Move the quiz window lower */
 }
 
 #quiz, #result, #leaderboard {
@@ -78,10 +83,10 @@ h2, h3 {
 
 .logo {
     position: absolute;
-    top: -80px; /* Position the logo above the box */
+    top: -100px; /* Move the logo higher */
     left: 50%;
     transform: translateX(-50%); /* Center horizontally */
-    width: 150px; /* Keep the size */
+    width: 150px;
     height: 150px;
     border-radius: 50%;
     background-color: #ffffff;
@@ -163,6 +168,25 @@ button:hover {
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle inner shadow */
 }
 
+#difficulty {
+    width: 80%; /* Match input field width */
+    padding: 10px; /* Add padding for better usability */
+    margin: 10px 0; /* Add spacing around the dropdown */
+    border: 1px solid #ccc; /* Subtle border */
+    border-radius: 4px; /* Rounded corners */
+    font-size: 16px; /* Match font size with input fields */
+    background-color: #ffffff; /* White background */
+    color: #333; /* Dark text for readability */
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle inner shadow */
+    cursor: pointer; /* Pointer cursor for better UX */
+}
+
+#difficulty:focus {
+    outline: none; /* Remove default focus outline */
+    border-color: #007bff; /* Highlight border on focus */
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Add glow effect */
+}
+
 .hint-text {
     color: #555;
     font-style: italic;
@@ -229,9 +253,10 @@ button:hover {
     justify-content: center;
     align-items: center;
     flex-direction: column;
-    height: 100vh; /* Full viewport height */
-    width: 100%; /* Full viewport width */
+    height: auto; /* Allow content to determine height */
+    width: 100%; /* Full width of the viewport */
     text-align: center;
+    box-sizing: border-box; /* Include padding and border in height/width calculations */
 }
 
 #skip-button {
