@@ -259,17 +259,19 @@ function showLeaderboard() {
     let leaderboardContent;
 
     if (playerName.toLowerCase() === "maike") {
-        // Show the full leaderboard for Maike
+        // Show all scores for Maike
         leaderboardContent = leaderboard.length === 0 
             ? "<p>Keine Einträge vorhanden.</p>" 
             : leaderboard.map((entry, index) => 
-                `<p>${index + 1}. <strong>${entry.name}</strong> - ${entry.score} Punkte</p>`
+                `<p>${index + 1}. <strong>${entry.name}</strong> - ${entry.score} Punkte (${entry.date})</p>`
               ).join("");
     } else {
         // Show only the current user's score for others
-        const userScore = leaderboard.find(entry => entry.name.toLowerCase() === playerName.toLowerCase());
-        leaderboardContent = userScore 
-            ? `<p><strong>${userScore.name}</strong> - ${userScore.score} Punkte</p>`
+        const userScores = leaderboard.filter(entry => entry.name.toLowerCase() === playerName.toLowerCase());
+        leaderboardContent = userScores.length > 0 
+            ? userScores.map((entry, index) => 
+                `<p>${index + 1}. <strong>${entry.name}</strong> - ${entry.score} Punkte (${entry.date})</p>`
+              ).join("")
             : "<p>Keine Einträge für Sie vorhanden.</p>";
     }
 
