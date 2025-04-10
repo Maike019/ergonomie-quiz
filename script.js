@@ -130,6 +130,7 @@ let currentQuestionIndex = 0;
 let score = 0;
 let playerName = "";
 
+// Shuffle questions and limit to 10
 function shuffleQuestions() {
     QUESTIONS.sort(() => Math.random() - 0.5);
     QUESTIONS.splice(10); // Limit to 10 questions
@@ -227,6 +228,14 @@ function showResult() {
     document.getElementById("restart-quiz").addEventListener("click", restartQuiz);
 }
 
+function showScore() {
+    scoreElement.innerHTML = `
+        <h2>Ihr Punktestand</h2>
+        <p>${playerName}, Sie haben <strong>${score}</strong> Punkte erreicht!</p>
+        <button id="save-score" class="btn-primary">Punktestand speichern</button>
+        <button id="show-leaderboard" class="btn-secondary">Leaderboard anzeigen</button>
+    `;
+    resultElement.appendChild(scoreElement); }
 function restartQuiz() {
     currentQuestionIndex = 0;
     score = 0;
@@ -247,14 +256,29 @@ function saveScore() {
 
 function showLeaderboard() {
     const leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
-    leaderboardElement.innerHTML = `
-        <h2>Leaderboard</h2>
-        ${leaderboard.length === 0 
+    let leaderboardContent;
+
+    if (playerName.toLowerCase() === "maike") {
+        // Show the full leaderboard for Maike
+        leaderboardContent = leaderboard.length === 0 
             ? "<p>Keine Einträge vorhanden.</p>" 
             : leaderboard.map((entry, index) => 
-                `<p>${index + 1}. <strong>${entry.name}</strong> - ${entry.score} Punkte</p>` // Removed date
-              ).join("")}
-        <button id="clear-leaderboard" class="btn-secondary">Leaderboard löschen</button>
+                `<p>${index + 1}. <strong>${entry.name}</strong> - ${entry.score} Punkte</p>`
+              ).join("");
+    } else {
+        // Show only the current user's score for others
+        const userScore = leaderboard.find(entry => entry.name.toLowerCase() === playerName.toLowerCase());
+        leaderboardContent = userScore 
+            ? `<p><strong>${userScore.name}</strong> - ${userScore.score} Punkte</p>`
+            : "<p>Keine Einträge für Sie vorhanden.</p>";
+    }
+
+    leaderboardElement.innerHTML = `
+        <h2>Leaderboard</h2>
+        ${leaderboardContent}
+        ${playerName.toLowerCase() === "maike" 
+            ? `<button id="clear-leaderboard" class="btn-secondary">Leaderboard löschen</button>` 
+            : ""} <!-- Show delete button only for Maike -->
         <button id="close-leaderboard" class="btn-secondary">Zurück</button>
     `;
 
@@ -263,7 +287,9 @@ function showLeaderboard() {
     document.getElementById("quiz").classList.add("hidden");
 
     // Add event listeners for the buttons
-    document.getElementById("clear-leaderboard").addEventListener("click", clearLeaderboard);
+    if (playerName.toLowerCase() === "maike") {
+        document.getElementById("clear-leaderboard").addEventListener("click", clearLeaderboard);
+    }
     document.getElementById("close-leaderboard").addEventListener("click", closeLeaderboard);
 }
 
@@ -309,6 +335,15 @@ function submitPlayerName() {
     }
 
     playerName = nameInput;
+
+    // Show the leaderboard button only for Maike
+    const leaderboardButton = document.getElementById("leaderboard-button");
+    if (playerName.toLowerCase() === "maike") {
+        leaderboardButton.classList.remove("hidden");
+    } else {
+        leaderboardButton.classList.add("hidden");
+    }
+
     document.getElementById("player-name-container").style.display = "none"; // Hide the input container
     document.getElementById("quiz").style.display = "block"; // Show the quiz
     shuffleQuestions();

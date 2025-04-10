@@ -78,7 +78,8 @@ h1 {
 }
 
 h2, h3 {
-    color: #444;
+    color: #444; /* Darker color for headings */ 
+
 }
 
 .logo {
@@ -100,7 +101,7 @@ h2, h3 {
 .logo img {
     width: 90%; /* Adjusted to fit the larger logo */
     height: auto;
-    border-radius: 50%;
+    border-radius: 50%; /* Keep the image circular */
 }
 
 button {
