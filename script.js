@@ -245,34 +245,46 @@ function restartQuiz() {
     showQuestion();
 }
 
-function saveScore() {
+async function saveScore() {
     if (!playerName) return;
 
-    const leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
-    leaderboard.push({ name: playerName, score, date: new Date().toLocaleString() });
-    leaderboard.sort((a, b) => b.score - a.score);
-    localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
+    const scoreData = { name: playerName, score, date: new Date().toLocaleString() };
+
+    try {
+        await fetch("http://localhost:3000/scores", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(scoreData),
+        });
+    } catch (error) {
+        console.error("Fehler beim Speichern des Punktestands:", error);
+    }
 }
 
-function showLeaderboard() {
-    const leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
+async function showLeaderboard() {
     let leaderboardContent;
 
-    if (playerName.toLowerCase() === "maike") {
-        // Show all scores for Maike
-        leaderboardContent = leaderboard.length === 0 
-            ? "<p>Keine Einträge vorhanden.</p>" 
-            : leaderboard.map((entry, index) => 
-                `<p>${index + 1}. <strong>${entry.name}</strong> - ${entry.score} Punkte (${entry.date})</p>`
-              ).join("");
-    } else {
-        // Show only the current user's score for others
-        const userScores = leaderboard.filter(entry => entry.name.toLowerCase() === playerName.toLowerCase());
-        leaderboardContent = userScores.length > 0 
-            ? userScores.map((entry, index) => 
-                `<p>${index + 1}. <strong>${entry.name}</strong> - ${entry.score} Punkte (${entry.date})</p>`
-              ).join("")
-            : "<p>Keine Einträge für Sie vorhanden.</p>";
+    try {
+        const response = await fetch("http://localhost:3000/scores");
+        const leaderboard = await response.json();
+
+        if (playerName.toLowerCase() === "maike") {
+            leaderboardContent = leaderboard.length === 0 
+                ? "<p>Keine Einträge vorhanden.</p>" 
+                : leaderboard.map((entry, index) => 
+                    `<p>${index + 1}. <strong>${entry.name}</strong> - ${entry.score} Punkte (${entry.date})</p>`
+                  ).join("");
+        } else {
+            const userScores = leaderboard.filter(entry => entry.name.toLowerCase() === playerName.toLowerCase());
+            leaderboardContent = userScores.length > 0 
+                ? userScores.map((entry, index) => 
+                    `<p>${index + 1}. <strong>${entry.name}</strong> - ${entry.score} Punkte (${entry.date})</p>`
+                  ).join("")
+                : "<p>Keine Einträge für Sie vorhanden.</p>";
+        }
+    } catch (error) {
+        console.error("Fehler beim Abrufen des Leaderboards:", error);
+        leaderboardContent = "<p>Fehler beim Laden des Leaderboards.</p>";
     }
 
     leaderboardElement.innerHTML = `
@@ -288,18 +300,21 @@ function showLeaderboard() {
     returnButton.style.display = "none";
     document.getElementById("quiz").classList.add("hidden");
 
-    // Add event listeners for the buttons
     if (playerName.toLowerCase() === "maike") {
         document.getElementById("clear-leaderboard").addEventListener("click", clearLeaderboard);
     }
     document.getElementById("close-leaderboard").addEventListener("click", closeLeaderboard);
 }
 
-function clearLeaderboard() {
+async function clearLeaderboard() {
     if (confirm("Möchten Sie das Leaderboard wirklich löschen?")) {
-        localStorage.removeItem("leaderboard");
-        alert("Leaderboard wurde gelöscht.");
-        showLeaderboard(); // Refresh the leaderboard display
+        try {
+            await fetch("http://localhost:3000/scores", { method: "DELETE" });
+            alert("Leaderboard wurde gelöscht.");
+            showLeaderboard();
+        } catch (error) {
+            console.error("Fehler beim Löschen des Leaderboards:", error);
+        }
     }
 }
 
