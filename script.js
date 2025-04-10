@@ -160,6 +160,20 @@ if (logoElement) {
     logoElement.style.marginTop = "10px"; // Move the logo higher
 }
 
+// Firebase configuration
+const firebaseConfig = {
+    apiKey: "YOUR_FIREBASE_API_KEY",
+    authDomain: "YOUR_FIREBASE_AUTH_DOMAIN",
+    projectId: "YOUR_FIREBASE_PROJECT_ID",
+    storageBucket: "YOUR_FIREBASE_STORAGE_BUCKET",
+    messagingSenderId: "YOUR_FIREBASE_MESSAGING_SENDER_ID",
+    appId: "YOUR_FIREBASE_APP_ID",
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
 function showQuestion() {
     const currentQuestion = QUESTIONS[currentQuestionIndex];
     questionElement.innerHTML = `<h3>${currentQuestion.question}</h3>`;
@@ -251,11 +265,8 @@ async function saveScore() {
     const scoreData = { name: playerName, score, date: new Date().toLocaleString() };
 
     try {
-        await fetch("http://localhost:3000/scores", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(scoreData),
-        });
+        await db.collection("scores").add(scoreData);
+        console.log("Punktestand erfolgreich gespeichert.");
     } catch (error) {
         console.error("Fehler beim Speichern des Punktestands:", error);
     }
@@ -265,8 +276,8 @@ async function showLeaderboard() {
     let leaderboardContent;
 
     try {
-        const response = await fetch("http://localhost:3000/scores");
-        const leaderboard = await response.json();
+        const snapshot = await db.collection("scores").orderBy("score", "desc").get();
+        const leaderboard = snapshot.docs.map(doc => doc.data());
 
         if (playerName.toLowerCase() === "maike") {
             leaderboardContent = leaderboard.length === 0 
@@ -309,7 +320,10 @@ async function showLeaderboard() {
 async function clearLeaderboard() {
     if (confirm("Möchten Sie das Leaderboard wirklich löschen?")) {
         try {
-            await fetch("http://localhost:3000/scores", { method: "DELETE" });
+            const snapshot = await db.collection("scores").get();
+            const batch = db.batch();
+            snapshot.docs.forEach(doc => batch.delete(doc.ref));
+            await batch.commit();
             alert("Leaderboard wurde gelöscht.");
             showLeaderboard();
         } catch (error) {

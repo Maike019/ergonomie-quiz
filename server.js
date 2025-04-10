@@ -1,5 +1,7 @@
 const express = require("express");
 const cors = require("cors");
+const fs = require("fs");
+const path = require("path");
 
 const app = express();
 const PORT = 3000;
@@ -7,7 +9,23 @@ const PORT = 3000;
 app.use(cors());
 app.use(express.json());
 
-let scores = [];
+const scoresFilePath = path.join(__dirname, "scores.json");
+
+// Load scores from file
+function loadScores() {
+    if (fs.existsSync(scoresFilePath)) {
+        const data = fs.readFileSync(scoresFilePath, "utf-8");
+        return JSON.parse(data);
+    }
+    return [];
+}
+
+// Save scores to file
+function saveScores(scores) {
+    fs.writeFileSync(scoresFilePath, JSON.stringify(scores, null, 2), "utf-8");
+}
+
+let scores = loadScores();
 
 // Get all scores
 app.get("/scores", (req, res) => {
@@ -22,12 +40,14 @@ app.post("/scores", (req, res) => {
     }
     scores.push({ name, score, date });
     scores.sort((a, b) => b.score - a.score);
+    saveScores(scores);
     res.status(201).json({ message: "Score added" });
 });
 
 // Clear all scores
 app.delete("/scores", (req, res) => {
     scores = [];
+    saveScores(scores);
     res.json({ message: "Leaderboard cleared" });
 });
 
