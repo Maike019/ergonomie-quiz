@@ -40,32 +40,30 @@
             <div id="leaderboard" class="hidden"></div>
         </div>
     </div>
-    <footer style="background-color: #1e3a5f; color: #f4f4f9; text-align: center; padding: 20px 0; margin-top: 20px;">
-        <p>&copy; 2023 Ergonomie Quiz. Alle Rechte vorbehalten.</p>
-    </footer>
+    
     <script src="script.js"></script>
-    <script type="module">
-        // Import the functions you need from the SDKs you need
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-analytics.js";
-        // TODO: Add SDKs for Firebase products that you want to use
-        // https://firebase.google.com/docs/web/setup#available-libraries
-      
-        // Your web app's Firebase configuration
-        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-        const firebaseConfig = {
-          apiKey: "AIzaSyCPjGFJnjg7fB5qpJchHYM8UvaBJqHyJIg",
-          authDomain: "ergonomie-quiz-17198.firebaseapp.com",
-          projectId: "ergonomie-quiz-17198",
-          storageBucket: "ergonomie-quiz-17198.firebasestorage.app",
-          messagingSenderId: "1081453008892",
-          appId: "1:1081453008892:web:58ffb10a9d86e110e70479",
-          measurementId: "G-40Q0XHX8ZZ"
-        };
-      
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
-      </script>
+    
+<!-- Firebase App (core) -->
+<script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js"></script>
+
+<!-- Firestore (oder Realtime Database) -->
+<script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js"></script>
+
+<script>
+   const firebaseConfig = {
+  apiKey: "AIzaSyCPjGFJnjg7fB5qpJchHYM8UvaBJqHyJIg",
+  authDomain: "ergonomie-quiz-17198.firebaseapp.com",
+  databaseURL: "https://ergonomie-quiz-17198-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "ergonomie-quiz-17198",
+  storageBucket: "ergonomie-quiz-17198.firebasestorage.app",
+  messagingSenderId: "1081453008892",
+  appId: "1:1081453008892:web:228cf1747060e90ae70479",
+  measurementId: "G-Q7SWEJ9DVT"
+};
+  
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+  </script>
+  
 </body>
 </html>
