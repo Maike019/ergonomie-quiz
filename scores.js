@@ -8,11 +8,27 @@ if (!admin.apps.length) {
 }
 const db = admin.firestore();
 const scoresCollection = db.collection("scores");
+const questionsCollection = db.collection("questions");
 
 async function loadScores() {
     const snapshot = await scoresCollection.orderBy("score", "desc").get();
     return snapshot.docs.map(doc => doc.data());
 }
+
+async function loadQuestions() {
+    const snapshot = await questionsCollection.get();
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+}
+
+async function checkAnswer(questionId, answer) {
+    const questionDoc = await questionsCollection.doc(questionId).get();
+    if (!questionDoc.exists) {
+        throw new Error("Question not found");
+    }
+    const correctAnswer = questionDoc.data().correctAnswer;
+    return correctAnswer === answer;
+}
+
 // Score speichern
 db.collection("scores").add({
     name: "Spieler1",  // Optional: Namen erfassen
@@ -45,17 +61,46 @@ async function clearScores() {
 
 export default async function handler(req, res) {
     if (req.method === "GET") {
-        // Return all scores
-        const scores = await loadScores();
-        res.status(200).json(scores);
-    } else if (req.method === "POST") {
-        // Add a new score
-        const { name, score, date } = req.body;
-        if (!name || score === undefined || !date) {
-            return res.status(400).json({ error: "Invalid data" });
+        const { type } = req.query;
+
+        if (type === "questions") {
+            // Return all quiz questions
+            const questions = await loadQuestions();
+            return res.status(200).json(questions);
+        } else {
+            // Return all scores
+            const scores = await loadScores();
+            return res.status(200).json(scores);
         }
-        await saveScore({ name, score, date });
-        res.status(201).json({ message: "Score added" });
+    } else if (req.method === "POST") {
+        const { type } = req.query;
+
+        if (type === "answer") {
+            // Check quiz answer
+            const { questionId, answer, name } = req.body;
+            if (!questionId || !answer || !name) {
+                return res.status(400).json({ error: "Invalid data" });
+            }
+            try {
+                const isCorrect = await checkAnswer(questionId, answer);
+                if (isCorrect) {
+                    await saveScore({ name, score: 10, date: new Date().toISOString() });
+                    return res.status(200).json({ message: "Correct answer!" });
+                } else {
+                    return res.status(200).json({ message: "Wrong answer!" });
+                }
+            } catch (error) {
+                return res.status(400).json({ error: error.message });
+            }
+        } else {
+            // Add a new score
+            const { name, score, date } = req.body;
+            if (!name || score === undefined || !date) {
+                return res.status(400).json({ error: "Invalid data" });
+            }
+            await saveScore({ name, score, date });
+            return res.status(201).json({ message: "Score added" });
+        }
     } else if (req.method === "DELETE") {
         // Clear all scores
         await clearScores();
