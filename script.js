@@ -367,22 +367,6 @@ function skipQuestion() {
     }
 }
 
-// Firebase config (ersetze durch deine)
-const firebaseConfig = {
-    apiKey: "DEIN_API_KEY",
-    authDomain: "dein-projekt.firebaseapp.com",
-    projectId: "dein-projekt-id",
-    storageBucket: "dein-projekt.appspot.com",
-    messagingSenderId: "...",
-    appId: "..."
-  };
-  
-  // Firebase initialisieren
-  firebase.initializeApp(firebaseConfig);
-  
-  // Firestore verwenden
-  const db = firebase.firestore();
-  
 // Event listeners
 document.getElementById("submit-name-button").addEventListener("click", submitPlayerName);
 hintButton.addEventListener("click", showHint);

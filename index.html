@@ -8,7 +8,6 @@
 </head>
 <body>
     <header style="background-color: #1e3a5f; color: #f4f4f9; padding: 20px 0; text-align: center;">
-    
     </header>
     <div class="center-wrapper">
         <div class="quiz-container">
@@ -36,34 +35,11 @@
                 <div class="result-decorative"></div>
                 <button id="restart-button" class="btn-primary">Quiz neu starten</button>
             </div>
-            <button id="leaderboard-button" class="hidden">Leaderboard anzeigen</button> <!-- Initially hidden -->
+            <button id="leaderboard-button" class="hidden">Leaderboard anzeigen</button>
             <div id="leaderboard" class="hidden"></div>
         </div>
     </div>
     
     <script src="script.js"></script>
-    
-<!-- Firebase App (core) -->
-<script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js"></script>
-
-<!-- Firestore (oder Realtime Database) -->
-<script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js"></script>
-
-<script>
-   const firebaseConfig = {
-  apiKey: "AIzaSyCPjGFJnjg7fB5qpJchHYM8UvaBJqHyJIg",
-  authDomain: "ergonomie-quiz-17198.firebaseapp.com",
-  databaseURL: "https://ergonomie-quiz-17198-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "ergonomie-quiz-17198",
-  storageBucket: "ergonomie-quiz-17198.firebasestorage.app",
-  messagingSenderId: "1081453008892",
-  appId: "1:1081453008892:web:228cf1747060e90ae70479",
-  measurementId: "G-Q7SWEJ9DVT"
-};
-  
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-  </script>
-  
 </body>
 </html>
