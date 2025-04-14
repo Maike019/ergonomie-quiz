@@ -29,25 +29,6 @@ async function checkAnswer(questionId, answer) {
     return correctAnswer === answer;
 }
 
-// Score speichern
-db.collection("scores").add({
-    name: "Spieler1",  // Optional: Namen erfassen
-    score: score,
-    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-  });
-// Score laden
-  db.collection("scores")
-  .orderBy("score", "desc")
-  .limit(10)
-  .get()
-  .then((querySnapshot) => {
-    querySnapshot.forEach((doc) => {
-      const data = doc.data();
-      // z. B. in eine Tabelle schreiben
-      console.log(`${data.name}: ${data.score}`);
-    });
-  });
-  
 async function saveScore(score) {
     await scoresCollection.add(score);
 }
