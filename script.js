@@ -160,8 +160,6 @@ if (logoElement) {
     logoElement.style.marginTop = "10px"; // Move the logo higher
 }
 
-const SERVER_URL = "https://your-hosted-server-url.com"; // Replace with your hosted server URL
-
 function showQuestion() {
     const currentQuestion = QUESTIONS[currentQuestionIndex];
     questionElement.innerHTML = `<h3>${currentQuestion.question}</h3>`;
@@ -226,6 +224,8 @@ function showResult() {
         <button id="restart-quiz" class="btn-primary">Quiz neu starten</button>
     `;
 
+    saveScore(); // Save the score to the leaderboard
+
     // Add event listener for the restart button
     document.getElementById("restart-quiz").addEventListener("click", restartQuiz);
 }
@@ -234,10 +234,10 @@ function showScore() {
     scoreElement.innerHTML = `
         <h2>Ihr Punktestand</h2>
         <p>${playerName}, Sie haben <strong>${score}</strong> Punkte erreicht!</p>
-        <button id="save-score" class="btn-primary">Punktestand speichern</button>
-        <button id="show-leaderboard" class="btn-secondary">Leaderboard anzeigen</button>
     `;
-    resultElement.appendChild(scoreElement); }
+    resultElement.appendChild(scoreElement);
+}
+
 function restartQuiz() {
     currentQuestionIndex = 0;
     score = 0;
@@ -247,47 +247,39 @@ function restartQuiz() {
     showQuestion();
 }
 
-async function saveScore() {
+function saveScore() {
     if (!playerName) return;
 
     const scoreData = { name: playerName, score, date: new Date().toLocaleString() };
 
-    try {
-        await fetch(`${SERVER_URL}/scores`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(scoreData),
-        });
-        console.log("Punktestand erfolgreich gespeichert.");
-    } catch (error) {
-        console.error("Fehler beim Speichern des Punktestands:", error);
-    }
+    // Fetch existing scores from localStorage
+    const leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
+    leaderboard.push(scoreData);
+    leaderboard.sort((a, b) => b.score - a.score);
+
+    // Save updated leaderboard to localStorage
+    localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
 }
 
-async function showLeaderboard() {
+function showLeaderboard() {
+    const leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
     let leaderboardContent;
 
-    try {
-        const response = await fetch(`${SERVER_URL}/scores`);
-        const leaderboard = await response.json();
-
-        if (playerName.toLowerCase() === "maike") {
-            leaderboardContent = leaderboard.length === 0 
-                ? "<p>Keine Einträge vorhanden.</p>" 
-                : leaderboard.map((entry, index) => 
-                    `<p>${index + 1}. <strong>${entry.name}</strong> - ${entry.score} Punkte (${entry.date})</p>`
-                  ).join("");
-        } else {
-            const userScores = leaderboard.filter(entry => entry.name.toLowerCase() === playerName.toLowerCase());
-            leaderboardContent = userScores.length > 0 
-                ? userScores.map((entry, index) => 
-                    `<p>${index + 1}. <strong>${entry.name}</strong> - ${entry.score} Punkte (${entry.date})</p>`
-                  ).join("")
-                : "<p>Keine Einträge für Sie vorhanden.</p>";
-        }
-    } catch (error) {
-        console.error("Fehler beim Abrufen des Leaderboards:", error);
-        leaderboardContent = "<p>Fehler beim Laden des Leaderboards.</p>";
+    if (playerName.toLowerCase() === "maike") {
+        // Show all scores for Maike
+        leaderboardContent = leaderboard.length === 0 
+            ? "<p>Keine Einträge vorhanden.</p>" 
+            : leaderboard.map((entry, index) => 
+                `<p>${index + 1}. <strong>${entry.name}</strong> - ${entry.score} Punkte (${entry.date})</p>`
+              ).join("");
+    } else {
+        // Show only the current user's scores for others
+        const userScores = leaderboard.filter(entry => entry.name.toLowerCase() === playerName.toLowerCase());
+        leaderboardContent = userScores.length > 0 
+            ? userScores.map((entry, index) => 
+                `<p>${index + 1}. <strong>${entry.name}</strong> - ${entry.score} Punkte (${entry.date})</p>`
+              ).join("")
+            : "<p>Keine Einträge für Sie vorhanden.</p>";
     }
 
     leaderboardElement.innerHTML = `
@@ -309,15 +301,11 @@ async function showLeaderboard() {
     document.getElementById("close-leaderboard").addEventListener("click", closeLeaderboard);
 }
 
-async function clearLeaderboard() {
+function clearLeaderboard() {
     if (confirm("Möchten Sie das Leaderboard wirklich löschen?")) {
-        try {
-            await fetch(`${SERVER_URL}/scores`, { method: "DELETE" });
-            alert("Leaderboard wurde gelöscht.");
-            showLeaderboard();
-        } catch (error) {
-            console.error("Fehler beim Löschen des Leaderboards:", error);
-        }
+        localStorage.removeItem("leaderboard");
+        alert("Leaderboard wurde gelöscht.");
+        showLeaderboard(); // Refresh the leaderboard display
     }
 }
 
@@ -328,7 +316,6 @@ function closeLeaderboard() {
 }
 
 function endQuiz() {
-    saveScore();
     showResult();
 }
 
