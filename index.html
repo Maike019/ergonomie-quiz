@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ergonomie Quiz</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js"></script>
 </head>
 <body>
     <header style="background-color: #1e3a5f; color: #f4f4f9; padding: 20px 0; text-align: center;">
@@ -15,13 +17,13 @@
                 <img src="logo.png" alt="Company Logo">
             </div>
             <h1>Willkommen!</h1>
-            <div id="player-name-container" class="hidden">
+            <div id="player-name-container">
                 <h2>Starten Sie das Quiz</h2>
                 <p>Geben Sie Ihren Namen ein, um zu beginnen:</p>
                 <input type="text" id="player-name" placeholder="Ihr Name">
-                <button id="submit-name-button">Starten</button>
+                <button id="submit-name-button" onclick="startQuiz()">Starten</button>
             </div>
-            <div id="quiz">
+            <div id="quiz" class="hidden">
                 <p id="question"></p>
                 <div id="answers"></div>
                 <button id="hint-button">Hinweis</button>
@@ -41,5 +43,11 @@
     </div>
     
     <script src="script.js"></script>
+    <script>
+        function startQuiz() {
+            document.getElementById('player-name-container').classList.add('hidden');
+            document.getElementById('quiz').classList.remove('hidden');
+        }
+    </script>
 </body>
 </html>

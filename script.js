@@ -1,3 +1,22 @@
+// Import Firebase modules
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getDatabase, ref, set, push, onValue, remove } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+
+// Firebase configuration
+const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_AUTH_DOMAIN",
+    databaseURL: "YOUR_DATABASE_URL",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_STORAGE_BUCKET",
+    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+    appId: "YOUR_APP_ID"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
+
 const QUESTIONS = [
     {
         question: "Was ist die optimale Sitzhöhe für einen Bürostuhl?",
@@ -247,65 +266,66 @@ function restartQuiz() {
     showQuestion();
 }
 
+// Save score to Firebase
 function saveScore() {
     if (!playerName) return;
 
-    const scoreData = { name: playerName, score, date: new Date().toLocaleString() };
+    const scoreData = {
+        name: playerName,
+        score,
+        date: new Date().toLocaleString()
+    };
 
-    // Fetch existing scores from localStorage
-    const leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
-    leaderboard.push(scoreData);
-    leaderboard.sort((a, b) => b.score - a.score);
-
-    // Save updated leaderboard to localStorage
-    localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
+    const leaderboardRef = ref(database, "leaderboard");
+    push(leaderboardRef, scoreData);
 }
 
+// Fetch leaderboard from Firebase
 function showLeaderboard() {
-    const leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
-    let leaderboardContent;
+    const leaderboardRef = ref(database, "leaderboard");
+    onValue(leaderboardRef, (snapshot) => {
+        const leaderboard = snapshot.val();
+        let leaderboardContent = "";
 
-    if (playerName.toLowerCase() === "maike") {
-        // Show all scores for Maike
-        leaderboardContent = leaderboard.length === 0 
-            ? "<p>Keine Einträge vorhanden.</p>" 
-            : leaderboard.map((entry, index) => 
-                `<p>${index + 1}. <strong>${entry.name}</strong> - ${entry.score} Punkte (${entry.date})</p>`
-              ).join("");
-    } else {
-        // Show only the current user's scores for others
-        const userScores = leaderboard.filter(entry => entry.name.toLowerCase() === playerName.toLowerCase());
-        leaderboardContent = userScores.length > 0 
-            ? userScores.map((entry, index) => 
-                `<p>${index + 1}. <strong>${entry.name}</strong> - ${entry.score} Punkte (${entry.date})</p>`
-              ).join("")
-            : "<p>Keine Einträge für Sie vorhanden.</p>";
-    }
+        if (leaderboard) {
+            const entries = Object.values(leaderboard);
+            entries.sort((a, b) => b.score - a.score);
 
-    leaderboardElement.innerHTML = `
-        <h2>Leaderboard</h2>
-        ${leaderboardContent}
-        ${playerName.toLowerCase() === "maike" 
-            ? `<button id="clear-leaderboard" class="btn-secondary">Leaderboard löschen</button>` 
-            : ""} <!-- Show delete button only for Maike -->
-        <button id="close-leaderboard" class="btn-secondary">Zurück</button>
-    `;
+            leaderboardContent = entries.map((entry, index) =>
+                `<p>${index + 1}. <strong>${entry.name}</strong> - ${entry.score} Punkte (${entry.date})</p>`
+            ).join("");
+        } else {
+            leaderboardContent = "<p>Keine Einträge vorhanden.</p>";
+        }
+
+        leaderboardElement.innerHTML = `
+            <h2>Leaderboard</h2>
+            ${leaderboardContent}
+            ${playerName.toLowerCase() === "maike" 
+                ? `<button id="clear-leaderboard" class="btn-secondary">Leaderboard löschen</button>` 
+                : ""} <!-- Show delete button only for Maike -->
+            <button id="close-leaderboard" class="btn-secondary">Zurück</button>
+        `;
+
+        if (playerName.toLowerCase() === "maike") {
+            document.getElementById("clear-leaderboard").addEventListener("click", clearLeaderboard);
+        }
+        document.getElementById("close-leaderboard").addEventListener("click", closeLeaderboard);
+    });
 
     leaderboardElement.classList.remove("hidden");
     returnButton.style.display = "none";
     document.getElementById("quiz").classList.add("hidden");
-
-    if (playerName.toLowerCase() === "maike") {
-        document.getElementById("clear-leaderboard").addEventListener("click", clearLeaderboard);
-    }
-    document.getElementById("close-leaderboard").addEventListener("click", closeLeaderboard);
 }
 
+// Clear leaderboard in Firebase
 function clearLeaderboard() {
     if (confirm("Möchten Sie das Leaderboard wirklich löschen?")) {
-        localStorage.removeItem("leaderboard");
-        alert("Leaderboard wurde gelöscht.");
-        showLeaderboard(); // Refresh the leaderboard display
+        const leaderboardRef = ref(database, "leaderboard");
+        remove(leaderboardRef).then(() => {
+            alert("Leaderboard wurde gelöscht.");
+            showLeaderboard(); // Refresh the leaderboard display
+        });
     }
 }
 
@@ -333,29 +353,22 @@ function startQuiz() {
     document.getElementById("player-name-container").appendChild(welcomeMessage);
 }
 
+// Event listeners
+document.getElementById("submit-name-button").addEventListener("click", submitPlayerName);
+hintButton.addEventListener("click", showHint);
+leaderboardButton.addEventListener("click", showLeaderboard);
+skipButton.addEventListener("click", skipQuestion);
+
 function submitPlayerName() {
-    const nameInput = document.getElementById("player-name").value.trim();
-
-    if (!nameInput) {
-        alert("Bitte geben Sie einen Namen ein, um das Quiz zu starten.");
-        return;
-    }
-
-    playerName = nameInput;
-
-    // Show the leaderboard button only for Maike
-    const leaderboardButton = document.getElementById("leaderboard-button");
-    if (playerName.toLowerCase() === "maike") {
-        leaderboardButton.classList.remove("hidden");
+    playerName = document.getElementById("player-name").value.trim();
+    if (playerName) {
+        document.getElementById("player-name-container").classList.add("hidden");
+        document.getElementById("quiz").classList.remove("hidden");
+        shuffleQuestions();
+        showQuestion();
     } else {
-        leaderboardButton.classList.add("hidden");
+        alert("Bitte geben Sie Ihren Namen ein.");
     }
-
-    document.getElementById("player-name-container").style.display = "none"; // Hide the input container
-    document.getElementById("quiz").style.display = "block"; // Show the quiz
-    shuffleQuestions();
-    showQuestion();
-    document.getElementById("player-name").value = ""; // Clear the input field
 }
 
 function skipQuestion() {
@@ -367,11 +380,6 @@ function skipQuestion() {
     }
 }
 
-// Event listeners
-document.getElementById("submit-name-button").addEventListener("click", submitPlayerName);
-hintButton.addEventListener("click", showHint);
-leaderboardButton.addEventListener("click", showLeaderboard);
-skipButton.addEventListener("click", skipQuestion);
-
+// Initialize the quiz
 // Start the quiz
 startQuiz();
